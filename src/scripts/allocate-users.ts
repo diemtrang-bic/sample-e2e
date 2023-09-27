@@ -9,7 +9,7 @@ const numberOfGroupAdminsInGroup = 10;
 const numberOfGroupMembersInGroup = 200;
 
 function getUserName(index: number) {
-  return `trangtestuser${index}`;
+  return `betestuser${index}`;
 }
 
 function makeArrayFromRange(fromIndex: number, toIndex: number) {
@@ -20,7 +20,7 @@ function makeArrayFromRange(fromIndex: number, toIndex: number) {
   return data;
 }
 
-export function getCommunityUsersAllocation(communityIndex: number) {
+function generateCommunityPopulation(communityIndex: number) {
   const firstUserIndex = (communityIndex - 1) * numberOfCommunities + 1;
   const lastUserIndex =
     firstUserIndex + numberOfCommunityMembersInCommunity - 1;
@@ -47,13 +47,10 @@ export function getCommunityUsersAllocation(communityIndex: number) {
   return data;
 }
 
-export function getGroupUsersAllocation(
-  communityIndex: number,
-  groupIndex: number,
-): { members: string[]; admins: string[] } {
+function generateGroupPopulation(communityNumber: number, groupNumber: number) {
   const { members: communityMembers } =
-    getCommunityUsersAllocation(communityIndex);
-  const firstMemberNumber = (groupIndex - 1) * numberOfGroupMembersInGroup + 1;
+    generateCommunityPopulation(communityNumber);
+  const firstMemberNumber = (groupNumber - 1) * numberOfGroupMembersInGroup + 1;
   const lastMemberNumber = firstMemberNumber + numberOfGroupMembersInGroup - 1;
 
   const memberIndexRange =
@@ -80,7 +77,7 @@ export function getGroupUsersAllocation(
 
 const communityNumber = 1;
 const groupNumber = 1;
-// console.log(JSON.stringify(getCommunityUsersAllocation(communityNumber)));
-// console.log(
-//   JSON.stringify(getGroupUsersAllocation(communityNumber, groupNumber)),
-// );
+console.log(JSON.stringify(generateCommunityPopulation(communityNumber)));
+console.log(
+  JSON.stringify(generateGroupPopulation(communityNumber, groupNumber)),
+);
