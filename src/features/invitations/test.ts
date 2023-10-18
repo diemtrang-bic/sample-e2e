@@ -10,7 +10,7 @@ import {
   TEST_USER_NAME,
   getToken,
 } from '../../configs';
-import { getGroupUsersAllocation } from '../../scripts/allocate-users';
+import { generateGroupSeed } from '../../scripts/allocate-users';
 
 const NUMBER_OF_INVITERS = Number(__ENV.NUM_OF_GROUP_ADMINS) || 1;
 const MAX_INVITEES = 20;
@@ -122,10 +122,10 @@ function getGroupInvitations(
   }).data;
 }
 
-export default function testCreateGroupInvitation() {
+export default function invitationTest() {
   const communityIndex = exec.vu.idInTest;
   const inviters = groupIndices.map((groupIndex) => {
-    const usersAllocationInGroup = getGroupUsersAllocation(
+    const usersAllocationInGroup = generateGroupSeed(
       communityIndex,
       groupIndex,
     );

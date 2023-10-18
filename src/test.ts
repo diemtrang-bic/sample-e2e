@@ -1,11 +1,11 @@
 import { group } from 'k6';
 import { DEFAULT_OPTIONS } from './configs';
-import invitationUseCases from './features/invitations/tests';
+import invitationTest from './features/invitations/test';
 
 export const options = DEFAULT_OPTIONS;
 
 export default function () {
-  [invitationUseCases].forEach((func) => {
+  [invitationTest].forEach((func) => {
     group(func.name, () => {
       func();
     });
