@@ -1,12 +1,5 @@
-import {generateGroupSeed, SEED_CONFIG} from "./allocate-users";
+import {generateGroupSeed, makeArrayFromRange, SEED_CONFIG} from "./allocate-users";
 
-export function generateListGroupSeed(communityNumber:number, groupNumber:number) {
-    const groups = []
-    for (let i = 1; i <= SEED_CONFIG.numberOfCommunities; i++) {
-        for (let j = 1; j <= SEED_CONFIG.numberOfGroupsInCommunity; j++) {
-            const groupSeed = generateGroupSeed(i, j)
-            groups.push(groupSeed)
-        }
-    }
-    return groups
+export function generateListGroupSeedInCommunity(communityNumber: number) {
+    return makeArrayFromRange(1, SEED_CONFIG.numberOfGroupsInCommunity).map(groupNumber => generateGroupSeed(communityNumber, groupNumber))
 }

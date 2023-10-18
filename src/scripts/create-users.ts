@@ -1,8 +1,7 @@
 import {generateUserSeed, SEED_CONFIG} from "./allocate-users";
 import {stringify} from 'csv-stringify/sync';
-import {writeFileSync} from 'fs';
 
-export function generateListUserSeed() {
+export function generateListUserSeedCSV() {
     const users = []
 
     for (let i = 1; i <= SEED_CONFIG.numberOfUsers; i++) {
@@ -10,9 +9,7 @@ export function generateListUserSeed() {
         users.push([fullName, username, email, password])
     }
 
-    return users
-}
+    users.unshift(['fullname', 'username', 'email', 'password'])
 
-const users = generateListUserSeed()
-users.unshift(['fullname', 'username', 'email', 'password'])
-writeFileSync('users.csv', stringify(users))
+    return stringify(users)
+}

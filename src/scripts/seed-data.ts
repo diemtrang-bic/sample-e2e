@@ -1,5 +1,9 @@
 import {HttpService} from "./http-service";
 import {generateListCommunitySeed} from "./community.seed";
+import FormData from "form-data";
+import {stringify} from 'csv-stringify/sync';
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 const sysAdmin = {
     username: 'betestsystemadmin',
@@ -17,20 +21,14 @@ HttpService.getToken(sysAdmin.username, sysAdmin.password).then(async res => {
     const communityIdByName: Map<string, string> = new Map()
 
     try {
-        // const user = await httpService.findUserByEmail('thuquyen@evol.vn')
-        // console.log(user.id)
-        //
-        // const community = await httpService.findCommunityByName('back-end')
-        // console.log(community.id)
-        //
-        // const group = await httpService.findGroupInCommunityByName('group 111', community.id)
-        // console.log(group.id)
-
-        const seedCommunities = generateListCommunitySeed()
+        console.log('** Start generate the seed communities')
+        const seedCommunities = [generateListCommunitySeed()[9]]
         for (const community of seedCommunities) {
+            console.log('> Working on the community', community.name)
+
             const communityPayload = {
                 name: community.name,
-                privacy: 'CLOSED',
+                privacy: 'PRIVATE',
                 owner_id: ''
             }
 
@@ -43,6 +41,7 @@ HttpService.getToken(sysAdmin.username, sysAdmin.password).then(async res => {
                 userIdByEmails.set(owner.email, user.id)
             }
 
+            console.log(' >> Create community', community.name)
             try {
                 const newCommunityRes = await httpService.http.post('/group/admin/communities', communityPayload)
                 communityIdByName.set(community.name, newCommunityRes.data.data.id)
@@ -50,11 +49,25 @@ HttpService.getToken(sysAdmin.username, sysAdmin.password).then(async res => {
                 const isExist = e.response.data.code === 'community.create.name_already_exists'
                 if (isExist) {
                     const existedCommunity = await httpService.findCommunityByName(community.name)
-                    communityIdByName.set(community.name, existedCommunity.id)
+                    if (existedCommunity?.id) {
+                        communityIdByName.set(community.name, existedCommunity.id)
+                    } else {
+                        throw new Error(`Community ${community.name} is not exist`)
+                    }
                 } else {
                     throw e
                 }
             }
+
+            await sleep(5000)
+            console.log(' >> Create community members', community.name)
+            const communityId = communityIdByName.get(community.name) as string
+            const communityMembers = community.members.map(member => [member.email, communityId])
+            communityMembers.unshift(['user_email', 'community_id'])
+
+            const form = new FormData()
+            form.append('file', stringify(communityMembers), 'community-member.csv')
+            await httpService.http.post('/group/admin/csv/import-community-members', form)
         }
     } catch (e) {
         console.error(e)

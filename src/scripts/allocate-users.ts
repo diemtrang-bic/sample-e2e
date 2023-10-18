@@ -58,7 +58,7 @@ export function generateCommunitySeed(communityNumber: number) {
             ];
 
     const members = makeArrayFromRange(memberRange[0], memberRange[1]).map(
-        generateUserNameSeed,
+        generateUserSeed,
     );
     const admins = members.slice(0, SEED_CONFIG.numberOfCommunityAdminsInCommunity);
 
