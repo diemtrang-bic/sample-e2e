@@ -9,7 +9,7 @@ interface ApiData {
 }
 
 export const CONFIGS = {
-  API_VERSION: {
+  API: {
     HEADER: 'x-version-id',
     VERSION: '1.1.0',
   },
@@ -63,7 +63,8 @@ export function getToken(username: string) {
   }
 }
 
-export function POST(data: ApiData) {
+// @ts-ignore
+export function post(data: ApiData) {
   let res;
 
   try {
@@ -72,7 +73,7 @@ export function POST(data: ApiData) {
         {
           'Content-Type': 'application/json',
           authorization: data.token,
-          [CONFIGS.API_VERSION.HEADER]: CONFIGS.API_VERSION.VERSION,
+          [CONFIGS.API.HEADER]: CONFIGS.API.VERSION,
         },
         data.headers,
       ),
@@ -82,7 +83,7 @@ export function POST(data: ApiData) {
       if (res.error_code === 401) {
         data.token = getToken(data.actorUsername);
 
-        return POST(data);
+        return post(data);
       } else {
         throw new Error('FAILED: ' + res.body);
       }
@@ -95,7 +96,8 @@ export function POST(data: ApiData) {
   }
 }
 
-export function PUT(data: ApiData) {
+// @ts-ignore
+export function put(data: ApiData) {
   const { actorUsername, token, body, url, headers } = data;
   let res;
   try {
@@ -104,7 +106,7 @@ export function PUT(data: ApiData) {
         {
           'Content-Type': 'application/json',
           authorization: token,
-          [CONFIGS.API_VERSION.HEADER]: CONFIGS.API_VERSION.VERSION,
+          [CONFIGS.API.HEADER]: CONFIGS.API.VERSION,
         },
         headers,
       ),
@@ -114,7 +116,7 @@ export function PUT(data: ApiData) {
       if (res.error_code === 401) {
         data.token = getToken(actorUsername);
 
-        return PUT(data);
+        return put(data);
       } else {
         throw new Error('FAILED: ' + res.body);
       }
@@ -127,15 +129,15 @@ export function PUT(data: ApiData) {
   }
 }
 
-export function GET(data: ApiData): any {
+export function get(data: ApiData): any {
   const { actorUsername, token, url, headers } = data;
   let res;
   try {
-    res = http.get(encodeURI(url), {
+    res = http.get(url, {
       headers: Object.assign(
         {
           authorization: token,
-          [CONFIGS.API_VERSION.HEADER]: CONFIGS.API_VERSION.VERSION,
+          [CONFIGS.API.HEADER]: CONFIGS.API.VERSION,
         },
         headers,
       ),
@@ -145,7 +147,7 @@ export function GET(data: ApiData): any {
       if (res.error_code === 401) {
         data.token = getToken(actorUsername);
 
-        return GET(data);
+        return get(data);
       } else {
         throw new Error('FAILED: ' + res.body);
       }
@@ -157,7 +159,3 @@ export function GET(data: ApiData): any {
     throw error;
   }
 }
-export const SUPER_ADMIN_USERNAME = 'betestsystemadmin';
-export const TEST_USER_NAME = 'Trang Test User';
-export const TEST_COMMUNITY_NAME = 'Trang Test Community';
-export const TEST_GROUP_NAME = 'Trang Test Group';
