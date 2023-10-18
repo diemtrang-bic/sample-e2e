@@ -1,83 +1,98 @@
-const numberOfUsers = 10000;
-const numberOfCommunities = 100;
-const numberOfGroupsInCommunity = 10;
+export const SEED_CONFIG = {
+  usernamePrefix: 'trangtestuser',
+  domainEmail: 'be.in',
+  defaultPassword: '$1orMore',
+  fullNamePrefix: 'BETest fullName of',
 
-const numberOfCommunityAdminsInCommunity = 5;
-const numberOfCommunityMembersInCommunity = 1000;
+  communityNamePrefix: 'Trang Test Community',
+  groupNamePrefix: 'Trang Test Group',
 
-const numberOfGroupAdminsInGroup = 10;
-const numberOfGroupMembersInGroup = 200;
+  numberOfUsers: 10000,
+  numberOfCommunities: 100,
+  numberOfGroupsInCommunity: 10,
 
-function getUserName(index: number) {
-  return `betestuser${index}`;
+  numberOfCommunityAdminsInCommunity: 5,
+  numberOfCommunityMembersInCommunity: 2000,
+
+  numberOfGroupAdminsInGroup: 10,
+  numberOfGroupMembersInGroup: 200,
+};
+
+export function generateUserNameSeed(userNumber: number) {
+    return `${SEED_CONFIG.usernamePrefix}${userNumber}`;
 }
 
-function makeArrayFromRange(fromIndex: number, toIndex: number) {
-  const data = [];
-  for (let i = fromIndex; i <= toIndex; i++) {
-    data.push(i);
-  }
-  return data;
+export function generateUserSeed(userNumber: number) {
+    const username = generateUserNameSeed(userNumber);
+    const fullName = `${SEED_CONFIG.fullNamePrefix} ${username}`;
+    const email = `${username}@${SEED_CONFIG.domainEmail}`
+
+    return {
+        username,
+        fullName,
+        email,
+        password: SEED_CONFIG.defaultPassword
+    };
 }
 
-function generateCommunityPopulation(communityIndex: number) {
-  const firstUserIndex = (communityIndex - 1) * numberOfCommunities + 1;
-  const lastUserIndex =
-    firstUserIndex + numberOfCommunityMembersInCommunity - 1;
+export function makeArrayFromRange(startNumber: number, endNumber: number) {
+    const data = [];
+    for (let i = startNumber; i <= endNumber; i++) {
+        data.push(i);
+    }
 
-  const memberRange =
-    lastUserIndex <= numberOfUsers
-      ? [firstUserIndex, lastUserIndex]
-      : [
-          numberOfUsers - numberOfCommunityMembersInCommunity + 1,
-          numberOfUsers,
-        ];
-
-  const members = makeArrayFromRange(memberRange[0], memberRange[1]).map(
-    getUserName,
-  );
-  const admins = members.slice(0, numberOfCommunityAdminsInCommunity);
-
-  const data = {
-    owner: getUserName(communityIndex),
-    members,
-    admins,
-  };
-
-  return data;
+    return data;
 }
 
-function generateGroupPopulation(communityNumber: number, groupNumber: number) {
-  const { members: communityMembers } =
-    generateCommunityPopulation(communityNumber);
-  const firstMemberNumber = (groupNumber - 1) * numberOfGroupMembersInGroup + 1;
-  const lastMemberNumber = firstMemberNumber + numberOfGroupMembersInGroup - 1;
+export function generateCommunitySeed(communityNumber: number) {
+    const firstUserIndex = (communityNumber - 1) * SEED_CONFIG.numberOfCommunities + 1;
+    const lastUserIndex =
+        firstUserIndex + SEED_CONFIG.numberOfCommunityMembersInCommunity - 1;
 
-  const memberIndexRange =
-    lastMemberNumber <= numberOfCommunityMembersInCommunity
-      ? [firstMemberNumber - 1, lastMemberNumber - 1]
-      : [
-          numberOfCommunityMembersInCommunity - numberOfGroupMembersInGroup,
-          numberOfCommunityMembersInCommunity - 1,
-        ];
+    const memberRange =
+        lastUserIndex <= SEED_CONFIG.numberOfUsers
+            ? [firstUserIndex, lastUserIndex]
+            : [
+                SEED_CONFIG.numberOfUsers - SEED_CONFIG.numberOfCommunityMembersInCommunity + 1,
+                SEED_CONFIG.numberOfUsers,
+            ];
 
-  const members = communityMembers.slice(
-    memberIndexRange[0],
-    memberIndexRange[1] + 1,
-  );
-  const admins = members.slice(0, numberOfGroupAdminsInGroup);
+    const members = makeArrayFromRange(memberRange[0], memberRange[1]).map(
+        generateUserNameSeed,
+    );
+    const admins = members.slice(0, SEED_CONFIG.numberOfCommunityAdminsInCommunity);
 
-  const data = {
-    members,
-    admins,
-  };
-
-  return data;
+    return {
+        name: `${SEED_CONFIG.communityNamePrefix} ${communityNumber}`,
+        owner: generateUserSeed(communityNumber),
+        members,
+        admins,
+    };
 }
 
-const communityNumber = 1;
-const groupNumber = 1;
-console.log(JSON.stringify(generateCommunityPopulation(communityNumber)));
-console.log(
-  JSON.stringify(generateGroupPopulation(communityNumber, groupNumber)),
-);
+export function generateGroupSeed(communityNumber: number, groupNumber: number) {
+    const {members: communityMembers} =
+        generateCommunitySeed(communityNumber);
+    const firstMemberNumber = (groupNumber - 1) * SEED_CONFIG.numberOfGroupMembersInGroup + 1;
+    const lastMemberNumber = firstMemberNumber + SEED_CONFIG.numberOfGroupMembersInGroup - 1;
+
+    const memberIndexRange =
+        lastMemberNumber <= SEED_CONFIG.numberOfCommunityMembersInCommunity
+            ? [firstMemberNumber - 1, lastMemberNumber - 1]
+            : [
+                SEED_CONFIG.numberOfCommunityMembersInCommunity - SEED_CONFIG.numberOfGroupMembersInGroup,
+                SEED_CONFIG.numberOfCommunityMembersInCommunity - 1,
+            ];
+
+    const members = communityMembers.slice(
+        memberIndexRange[0],
+        memberIndexRange[1] + 1,
+    );
+    const admins = members.slice(0, SEED_CONFIG.numberOfGroupAdminsInGroup);
+
+    return {
+        name: `${SEED_CONFIG.groupNamePrefix} ${groupNumber}`,
+        members,
+        admins,
+    };
+}

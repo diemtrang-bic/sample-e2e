@@ -25,6 +25,11 @@
     "start": "webpack"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "axios": "^1.5.1",
+    "core-js": "^3.33.0",
+    "csv-stringify": "^6.4.4",
+    "deepmerge": "^4.3.1",
+    "lodash": "^4.17.21",
+    "regenerator-runtime": "^0.14.0"
   }
 }

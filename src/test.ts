@@ -1,11 +1,14 @@
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
 import { group } from 'k6';
 import { DEFAULT_OPTIONS } from './configs';
-import invitationUseCases from './features/invitations/tests';
+import invitationTest from './features/invitations/test';
+import { groupTest } from './features/groups/test';
 
 export const options = DEFAULT_OPTIONS;
 
 export default function () {
-  [invitationUseCases].forEach((func) => {
+  [invitationTest, groupTest].forEach((func) => {
     group(func.name, () => {
       func();
     });
