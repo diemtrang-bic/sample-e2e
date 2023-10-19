@@ -18,6 +18,13 @@ npm install
 ```
 
 ## Running the test
+Build the binary k6 with extensions:
+
+```bash
+docker run --rm -it -u "$(id -u):$(id -g)" -v "${PWD}:/xk6" grafana/xk6 build v0.43.1 --with github.com/oleiade/xk6-kv
+```
+
+## Running the test
 
 To run a test written in TypeScript, we first have to transpile the TypeScript code into JavaScript and bundle the project
 
@@ -27,10 +34,10 @@ npm start
 
 This command creates the final test files to the `./dist` folder.
 
-Once that is done, we can run our script the same way we usually do, for instance:
+Run the test:
 
 ```bash
-k6 run dist/test.js
+./k6 run dist/test.js
 ```
 
 ## Writing own tests

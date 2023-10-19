@@ -8,7 +8,6 @@ import {
   TEST_COMMUNITY_NAME,
   TEST_GROUP_NAME,
   TEST_USER_NAME,
-  getToken,
 } from '../../configs';
 import { generateGroupSeed } from '../../scripts/allocate-users';
 
@@ -21,35 +20,35 @@ const groupIndices = Array.from(
   (_, k) => k + 1,
 );
 
-function getJoinedCommunities(
+async function getJoinedCommunities(
   groupAdminUsername: string,
-  token: string,
-): { id: string; name: string }[] {
-  return GET({
-    actorUsername: groupAdminUsername,
-    url: `${CONFIGS.GROUP}/me/communities?limit=500`,
-    token,
-  }).data;
+): Promise<{ id: string; name: string }[]> {
+  return (
+    await GET({
+      actorUsername: groupAdminUsername,
+      url: `${CONFIGS.GROUP}/me/communities?limit=500`,
+    })
+  ).data;
 }
 
-function getTargetGroup(
+async function getTargetGroup(
   groupAdminUsername: string,
   communityIndex: number,
   groupIndex: number,
-  token: string,
-): { id: string; name: string } {
-  const joinedCommunities = getJoinedCommunities(groupAdminUsername, token);
+): Promise<{ id: string; name: string }> {
+  const joinedCommunities = await getJoinedCommunities(groupAdminUsername);
   const targetCommunityName = `${TEST_COMMUNITY_NAME} ${communityIndex}`;
 
   const targetCommunity = joinedCommunities.find(
     (c) => c.name === targetCommunityName,
   );
 
-  const joinedGroupsInCommunity = GET({
-    token,
-    actorUsername: groupAdminUsername,
-    url: `${CONFIGS.GROUP}/me/communities/${targetCommunity?.id}/groups?list_by=flat&limit=500`,
-  }).data as { id: string; name: string }[];
+  const joinedGroupsInCommunity = (
+    await GET({
+      actorUsername: groupAdminUsername,
+      url: `${CONFIGS.GROUP}/me/communities/${targetCommunity?.id}/groups?list_by=flat&limit=500`,
+    })
+  ).data as { id: string; name: string }[];
 
   const targetGroupName = `${TEST_GROUP_NAME} ${groupIndex}`;
   const targetGroup = joinedGroupsInCommunity.find(
@@ -59,17 +58,25 @@ function getTargetGroup(
   return targetGroup;
 }
 
-export function createGroupInvitations(
+function processInvitation(targetId: string, username: string) {
+  const userIndex = Number(username.substring(TEST_USER_NAME.length));
+  if (userIndex % 2 === 1) {
+  }
+}
+
+function acceptInvitation(username: string) {
+  
+}
+
+export async function createGroupInvitations(
   targetGroupId: string,
   groupAdminUsername: string,
-  token: string,
 ) {
-  const invitees = getInvitees(groupAdminUsername, token, targetGroupId);
+  const invitees = await getInvitees(groupAdminUsername, targetGroupId);
   const inviteeIds = invitees.map((i) => i.id);
   const inviteeIdsBatches = chunk(inviteeIds, MAX_INVITEES);
   inviteeIdsBatches.forEach((inviteeIds) =>
     POST({
-      token,
       actorUsername: groupAdminUsername,
       url: `${CONFIGS.GROUP}/invitations`,
       body: {
@@ -80,10 +87,9 @@ export function createGroupInvitations(
     }),
   );
 
-  const invitations = getGroupInvitations(
+  const invitations = await getGroupInvitations(
     targetGroupId,
     groupAdminUsername,
-    token,
   );
 
   const invitedUserIds = invitations.map((i) => i.invitee.id);
@@ -94,35 +100,35 @@ export function createGroupInvitations(
   });
 }
 
-function getInvitees(
+async function getInvitees(
   groupAdminUsername: string,
-  token: string,
   targetGroupId: string,
-): {
-  id: string;
-  fullname: string;
-}[] {
-  const response = GET({
+): Promise<
+  {
+    id: string;
+    fullname: string;
+  }[]
+> {
+  const response = await GET({
     actorUsername: groupAdminUsername,
-    token,
     url: `${CONFIGS.GROUP}/groups/${targetGroupId}/joinable-users?limit=${inviteeCount}&key=${TEST_USER_NAME}`,
   });
   return response.data;
 }
 
-function getGroupInvitations(
+async function getGroupInvitations(
   targetGroupId: string,
   groupAdminUsername: string,
-  token: string,
-): { invitee: { id: string } }[] {
-  return GET({
-    token,
-    actorUsername: groupAdminUsername,
-    url: `${CONFIGS.GROUP}/groups/${targetGroupId}/invitations?limit=${inviteeCount}`,
-  }).data;
+): Promise<{ invitee: { id: string; username: string } }[]> {
+  return (
+    await GET({
+      actorUsername: groupAdminUsername,
+      url: `${CONFIGS.GROUP}/groups/${targetGroupId}/invitations?limit=500`,
+    })
+  ).data;
 }
 
-export default function invitationTest() {
+export default async function invitationTest() {
   const communityIndex = exec.vu.idInTest;
   const inviters = groupIndices.map((groupIndex) => {
     const usersAllocationInGroup = generateGroupSeed(
@@ -131,25 +137,23 @@ export default function invitationTest() {
     );
     const pickedGroupAdmin = usersAllocationInGroup.admins[0];
     return {
-      groupAdminUsername: pickedGroupAdmin,
-      token: getToken(pickedGroupAdmin),
+      groupAdminUsername: pickedGroupAdmin.username,
     };
   });
 
   group('group admin invites users to group', function () {
-    inviters.forEach(({ groupAdminUsername, token }, index) => {
+    inviters.forEach(async ({ groupAdminUsername }, index) => {
       const groupIndex = index + 1;
-      const targetGroup = getTargetGroup(
+      const targetGroup = await getTargetGroup(
         groupAdminUsername,
         communityIndex,
         groupIndex,
-        token,
       );
       const targetGroupId = targetGroup.id;
 
       sleep(0.2);
 
-      createGroupInvitations(targetGroupId, groupAdminUsername, token);
+      createGroupInvitations(targetGroupId, groupAdminUsername);
     });
   });
 }
