@@ -1,7 +1,7 @@
 export const SEED_CONFIG = {
     usernamePrefix: 'betestuser',
     domainEmail: 'be.in',
-    defaultPassword: '$1orMore',
+    defaultPassword: '1$orMore',
     fullNamePrefix: 'BETest fullName of',
 
     communityNamePrefix: 'BE Test Community',

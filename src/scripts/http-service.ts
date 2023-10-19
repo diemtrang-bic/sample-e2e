@@ -26,10 +26,6 @@ export class HttpService {
         })
     }
 
-    async postUpload() {
-
-    }
-
     async findUserByEmail(email: string): Promise<{
         id: string;
         username: string;
@@ -67,7 +63,7 @@ export class HttpService {
 
             return res.data.data.find((community: any) => community.name === name)
         } catch (e) {
-            console.error('findCommunityByName', e)
+            console.error('findCommunityByName', e.response)
             throw new Error(`Cannot find the community with name: ${name}`)
         }
     }
@@ -88,6 +84,24 @@ export class HttpService {
         } catch (e) {
             console.error('findGroupInCommunityByName', e)
             throw new Error(`Cannot find the group with name: ${groupName} in the community ${communityId}`)
+        }
+    }
+
+    async findAllGroupsInCommunity(communityId: string) {
+        try {
+            const res = await this.http.get('/group/admin/groups', {
+                params: {
+                    community_id: communityId,
+                    offset: 0,
+                    limit: 200,
+                    sort: 'name:asc'
+                }
+            })
+
+            return res.data.data
+        } catch (e) {
+            console.error('findAllGroupsInCommunity', e)
+            throw new Error(`Cannot find the groups in the community ${communityId}`)
         }
     }
 
@@ -119,7 +133,7 @@ export class HttpService {
                 tokenType: res.data.AuthenticationResult.TokenType,
             }
         } catch (e) {
-            console.error(e)
+            console.error(e.response.data)
             throw new Error(` Cannot get token for user: ${username}`)
         }
     }
